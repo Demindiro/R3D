@@ -1,4 +1,4 @@
-module core.vector;
+module r3d.core.vector;
 
 
 struct Vector2
@@ -28,6 +28,16 @@ struct Vector3
 	auto opBinaryRight(string op, T)(T c)
 	{
 		return opBinary!op(c);
+	}
+
+	auto opUnary(string op)()
+	{
+		Vector3 v = {
+			x: mixin(op ~ "x"),
+			y: mixin(op ~ "y"),
+			z: mixin(op ~ "z"),
+		};
+		return v;
 	}
 
 	static const Vector3 zero    = { x:  0, y:  0,  z:  0};

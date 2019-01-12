@@ -1,19 +1,20 @@
-module graphics.shader;
+module r3d.graphics.shader;
 
 import std.conv;
 import std.string;
-import graphics.exceptions;
-import graphics.gl.gl;
+import r3d.graphics : checkForGlError;
+import r3d.graphics.exceptions;
+import r3d.graphics.opengl.gl;
+import r3d.graphics.opengl.gl : GLShader = Shader;
 
 abstract class Shader
 {
-	package graphics.gl.gl.Shader _shader;
+	package GLShader _shader;
 
 	this(string source, uint type)
 	{
 		_shader = glCreateShader(type);
-		if (!_shader)
-			throw new GraphicsException();
+		checkForGlError();
 
 		immutable(char*) sourcez = toStringz(source);
 		uint len = cast(uint)source.length;

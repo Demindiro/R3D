@@ -1,4 +1,4 @@
-module graphics.gl.gl;
+module r3d.graphics.opengl.gl;
 
 /*
 Constants
@@ -50,6 +50,16 @@ const uint GL_LINEAR_MIPMAP_LINEAR   = 0x2703;
 const uint GL_TEXTURE_MAG_FILTER = 0x2800;
 const uint GL_TEXTURE_MIN_FILTER = 0x2801;
 
+enum Error
+{
+	none                        = 0,
+	invalidEnum                 = 0x0500,
+	invalidValue                = 0x0501,
+	invalidOperation            = 0x0502,
+	outOfMemory                 = 0x0505,
+	invalidFramebufferOperation = 0x0506,
+}
+
 
 /*
 "Classes"
@@ -66,11 +76,13 @@ C API
 */
 // Dunno
 @nogc extern (C): void glClear(uint flags);
+@nogc extern (C): void glClearColor(float red, float green, float blue, float alpha);
 @nogc extern (C): void glEnable(uint flag);
 @nogc extern (C): void glDisable(uint flag);
 @nogc extern (C): void glDepthFunc(uint flag);
 @nogc extern (C): const(char*) glGetString(uint name);
-@nogc extern (C): uint glGetError();
+@nogc extern (C): Error glGetError();
+@nogc extern (C): void glFinish();
 
 // Parts of the old OpenGL API I think?
 @nogc extern (C): void glViewport(float x, float y, float width, float height);
@@ -98,8 +110,9 @@ C API
 @nogc extern (C): void glGetProgramiv(Program program, uint pname, int *params);
 @nogc extern (C): void glGetProgramInfoLog(Program program, size_t maxLength,
 	size_t *length, char *log);
+@nogc extern (C): void glDeleteProgram(Program program);
 
-// Shaders/Programs (uniform values)
+// Uniforms
 @nogc extern (C): void glUniform1f(int location, float v0);
 @nogc extern (C): void glUniform2f(int location, float v0, float v1);
 @nogc extern (C): void glUniform3f(int location, float v0, float v1, float v2);
@@ -142,11 +155,12 @@ C API
                                             bool transpose, const(float*) value);
 @nogc extern (C): void glUniformMatrix4x3fv(int location, size_t count,
                                             bool transpose, const(float*) value); 
+@nogc extern (C): int glGetUniformLocation(Program program, const(char*) name);
 
 // Buffers
 @nogc extern (C): void glGenBuffers(uint count, Buffer *buffers);
 @nogc extern (C): void glBindBuffer(uint type,  Buffer  buffer);
-@nogc extern (C): void glBufferData(uint target, size_t size, const void *ptr,
+@nogc extern (C): void glBufferData(uint target, size_t size, const void* ptr,
                                     uint usage);
 @nogc extern (C): void glDeleteBuffers(uint count, Buffer *buffers);
 
@@ -156,7 +170,8 @@ C API
 @nogc extern (C): void glEnableVertexAttribArray(uint index);
 @nogc extern (C): void glVertexAttribPointer(uint index, int size, uint type,
                                              bool normalized, size_t stride,
-                                             const void *ptr);
+                                             size_t offset);
+@nogc extern (C): void glVertexAttribDivisor(uint index, uint divisor);
 @nogc extern (C): void glDeleteVertexArrays(uint count, VertexArray *buffers);
 
 // Textures
@@ -171,3 +186,5 @@ C API
 
 // Rendering
 @nogc extern (C): void glDrawArrays(uint mode, int first, size_t count);
+@nogc extern (C): void glDrawArraysInstanced(uint mode, int first, size_t count,
+                                             size_t primcount);

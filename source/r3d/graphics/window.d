@@ -1,4 +1,4 @@
-module graphics.window;
+module r3d.graphics.window;
 
 import std.container;
 import std.conv;
@@ -6,11 +6,13 @@ import std.exception;
 import std.file;
 import std.stdio;
 import std.string;
-import graphics.exceptions;
-import graphics.gl.glfw;
-import graphics.gl.gl;
-import graphics : initialized;
-import core.vector;
+import r3d.graphics : checkForGlError;
+import r3d.graphics.exceptions;
+import r3d.graphics.opengl.glfw;
+import r3d.graphics.opengl.glfw : GLFWwindow = Window;
+import r3d.graphics.opengl.gl;
+import r3d.graphics : initialized;
+import r3d.core.vector;
 
 
 // Classes
@@ -30,11 +32,15 @@ class Window
 		_window = glfwCreateWindow(width, height, title.ptr, null, null);
 		if (!_window)
 			throw new GraphicsException();
+
 		glfwMakeContextCurrent(_window);
 
 		glEnable(GL_DEPTH_TEST);
+		checkForGlError();
 		glEnable(GL_MULTISAMPLE);
+		checkForGlError();
 		glDepthFunc(GL_LESS);
+		checkForGlError();
 	}
 
 	@nogc
@@ -43,9 +49,10 @@ class Window
 		close();
 	}
 
-	@property uint width () { return _width;  }
-	@property uint height() { return _height; }
+	@property uint   width () { return _width;  }
+	@property uint   height() { return _height; }
 	@property string title () { return _title;  }
+	@property bool   closed() { return _closed; }
 
 	@property string title (string newTitle) 
 	{
@@ -61,7 +68,11 @@ class Window
 
 	void clear()
 	{
+		glClearColor(0,0,0,0);
+		checkForGlError();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		checkForGlError();
+		glfwGetWindowSize(_window, &_width, &_height);
 	}
 
 	@nogc
@@ -75,6 +86,7 @@ class Window
 	void swapBuffers()
 	{
 		glfwSwapBuffers(_window);
+
 		version(OSX)
 		{
 			// BUG OpenGL on OS X doesn't render unless the window
