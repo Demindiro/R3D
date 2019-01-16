@@ -16,7 +16,7 @@ This struct represents a quaternion.
 {
 	double w, x, y, z;
 
-	@property Vector3 eulerAngles()
+	Vector3 eulerAngles()
 	{
 		Vector3 v = {
 			x: atan2(2 * (w*x + y*z), 1 - 2 * (x*x + y*y)),
@@ -26,19 +26,19 @@ This struct represents a quaternion.
 		return v;
 	}
 
-	@property double norm2()
+	double norm2()
 	{
 		return w * w + x * x + y * y + z * z;
 	}
 
-	@property double norm()
+	double norm()
 	{
 		return norm2.sqrt;
 	}
 
 
 	// TODO norm
-	@property Matrix!(T,3,3) matrix(T)()
+	Matrix!(T,3,3) matrix(T)()
 	{
 		static if (!is(T == float) && !is(T == double))
 			static assert(0, "Type must be float or double, not " ~ T.stringof);
@@ -53,7 +53,7 @@ This struct represents a quaternion.
 		return Matrix!(T,3,3)(a);
 	}
 
-	@property Vector3 eulerAngles(Vector3 v)
+	Vector3 eulerAngles(Vector3 v)
 	{
 		auto cx = cos(v.x * 0.5), sx = sin(v.x * 0.5);
 		auto cy = cos(v.y * 0.5), sy = sin(v.y * 0.5);

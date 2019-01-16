@@ -1,7 +1,15 @@
 .SUFFIXES:
 
-sources = source/*.d source/r3d/*.d source/r3d/*/*.d
-headers = -Isource/ -Isource/*/ -Isource/*/*/
+sources   = source/r3d/*.d source/r3d/*/*.d
+headers   = -Isource/ -Isource/*/ -Isource/*/*/
+libraries = -L-lglfw -L-framework -LOpenGL
+DC = dmd $(sources) $(headers) -od=build/obj -of=build/engine $(libraries)
 
-default:
-	dmd $(sources) $(headers) -od=build/obj -of=build/engine -L-lglfw -L-framework -LOpenGL -g -debug
+
+default: test
+
+test:
+	$(DC) examples/main.d -g -debug
+
+release:
+	$(DC) -O -release -inline

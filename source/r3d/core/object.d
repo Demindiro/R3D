@@ -8,8 +8,7 @@ import r3d.core.quaternion;
 
 
 // Really, Phobos?
-@nogc
-private bool contains(T)(Array!T a, T x)
+private bool contains(T)(Array!T a, T x) @nogc nothrow
 {
 	foreach (y; a)
 	{
@@ -20,19 +19,26 @@ private bool contains(T)(Array!T a, T x)
 }
 
 
+class Component
+{
+
+}
+
+
 class R3DObject
 {
 	private R3DObject _parent;
 	private auto _children = Array!R3DObject();
+	Component components;
 	Quaternion rotation;
 	Vector3 position;
 	bool enabled = true;
 
 	// Getters
-	@property auto parent() { return _parent; }
+	auto parent() { return _parent; }
 
 	// Setters
-	@property auto parent(R3DObject parent)
+	auto parent(R3DObject parent)
 	{
 		if (_parent)
 		{

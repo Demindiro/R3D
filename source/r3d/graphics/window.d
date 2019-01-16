@@ -6,13 +6,33 @@ import std.exception;
 import std.file;
 import std.stdio;
 import std.string;
-import r3d.graphics : checkForGlError;
+import r3d.core.vector;
+import r3d.graphics : checkForGlError, initialized;
 import r3d.graphics.exceptions;
 import r3d.graphics.opengl.glfw;
 import r3d.graphics.opengl.glfw : GLFWwindow = Window;
 import r3d.graphics.opengl.gl;
-import r3d.graphics : initialized;
-import r3d.core.vector;
+import r3d.input.keyboard;
+
+// Globals
+private Window[GLFWwindow] _windows;
+
+// Callbacks
+private extern (C) void keyCallback(GLFWwindow window, KeyCode key, int scancode,
+                                    KeyAction action, int mods)
+{
+	_windows[window]._keyCallback(key, action);
+}
+
+private extern (C) void cursorPosCallback(GLFWwindow window, double x, double y)
+{
+	_windows[window]._cursorPosCallback(x, y);
+}
+
+private extern (C) void cursorEnterCallback(GLFWwindow window, bool entered)
+{
+	_windows[window]._cursorEnterCallback(entered);
+}
 
 
 // Classes
@@ -21,8 +41,11 @@ class Window
 	private GLFWwindow _window;
 	private int _width, _height;
 	private string _title;
-	version (OSX) ubyte _osx_fixed = 0;
 	private bool _closed = false;
+	private KeyAction[512] _keyActions;
+	private Vector2        _cursorPos = Vector2.zero;
+	private bool           _cursorEntered; 
+	version (OSX) private ubyte _osx_fixed = 0;
 
 	this(int width, int height, string title)
 	{
@@ -34,52 +57,88 @@ class Window
 			throw new GraphicsException();
 
 		glfwMakeContextCurrent(_window);
+		glfwSetKeyCallback(_window, &keyCallback);
+		glfwSetCursorPosCallback(_window, &cursorPosCallback);
+		glfwSetCursorEnterCallback(_window, &cursorEnterCallback);
 
 		glEnable(GL_DEPTH_TEST);
-		checkForGlError();
 		glEnable(GL_MULTISAMPLE);
-		checkForGlError();
 		glDepthFunc(GL_LESS);
 		checkForGlError();
+
+		_windows[_window] = this;
 	}
 
-	@nogc
 	~this()
 	{
-		close();
+		if (initialized)
+			close();
 	}
 
-	@property uint   width () { return _width;  }
-	@property uint   height() { return _height; }
-	@property string title () { return _title;  }
-	@property bool   closed() { return _closed; }
+	private void _updateDimensions()
+	{
+		glfwGetWindowSize(_window, &_width, &_height);
+	}
 
-	@property string title (string newTitle) 
+	private void _keyCallback(KeyCode key, KeyAction action)
+	{
+		_keyActions[key] = action;
+	}
+
+	private void _cursorPosCallback(double x, double y)
+	{
+		_cursorPos = Vector2(x, y);
+	}
+
+	private void _cursorEnterCallback(bool entered)
+	{
+		_cursorEntered = entered;
+	}
+
+	uint   width () { _updateDimensions(); return _width;  }
+	uint   height() { _updateDimensions(); return _height; }
+	string title () { return _title;  }
+	bool   closed() { return _closed; }
+
+	string title (string newTitle) 
 	{
 		_title = newTitle;
 		glfwSetWindowTitle(_window, toStringz(newTitle));
 		return newTitle;
 	}
 
-	@property bool shouldClose()
+	bool shouldClose()
 	{
 		return glfwWindowShouldClose(_window);
+	}
+
+	KeyAction keyAction(KeyCode key)
+	{
+		return _keyActions[key];
+	}
+
+	Vector2 cursorPos()
+	{
+		return _cursorPos;
+	}
+
+	bool cursorEntered()
+	{
+		return _cursorEntered;
 	}
 
 	void clear()
 	{
 		glClearColor(0,0,0,0);
-		checkForGlError();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		checkForGlError();
-		glfwGetWindowSize(_window, &_width, &_height);
 	}
 
-	@nogc
 	void close()
 	{
 		if (!_closed)
 			glfwDestroyWindow(_window);
+		_windows[_window] = null;
 		_closed = true;
 	}
 

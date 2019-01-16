@@ -12,7 +12,7 @@ import r3d.graphics.opengl.gl : glGetString, GL_RENDERER, GL_VERSION, glGetError
 
 
 // Globals
-private shared bool initialized = false;
+package shared bool initialized = false;
 
 package void delegate(int error, const(char*) description) error_handler;
 package int    error_code;
