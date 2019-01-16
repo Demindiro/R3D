@@ -1,10 +1,10 @@
 module r3d.core.object;
 
-import std.container.array;
-import std.algorithm : filter, remove;
-import std.range;
+import std.container;
+import std.datetime;
 import r3d.core.vector;
 import r3d.core.quaternion;
+import r3d.core.world;
 
 
 // Really, Phobos?
@@ -19,55 +19,33 @@ private bool contains(T)(Array!T a, T x) @nogc nothrow
 }
 
 
-class Component
+abstract class Component
 {
-
+	abstract void update(World world, R3DObject object, Duration deltaTime);
 }
 
 
 class R3DObject
 {
-	private R3DObject _parent;
-	private auto _children = Array!R3DObject();
-	Component components;
-	Quaternion rotation;
-	Vector3 position;
-	bool enabled = true;
+	private auto _components  = Array!Component();
+	Quaternion    orientation = Quaternion.unit;
+	Vector3       position    = Vector3.zero;
+	bool          enabled     = true;
+	//alias _components this;
 
-	// Getters
-	auto parent() { return _parent; }
-
-	// Setters
-	auto parent(R3DObject parent)
+	ref auto opIndex(size_t i)
 	{
-		if (_parent)
-		{
-			// Surely there is a std function, but I can't figure out which
-			for (size_t i = 0; i < _parent._children.length; i++)
-			{
-				auto c = _parent._children[i];
-				if (c == this)
-				{
-					for (size_t j = i + 1; j < _parent._children.length; j++)
-						_parent._children[j - 1] = _parent._children[j];
-					_parent._children.removeBack();
-					break;
-				}
-			}
-		}
-		_parent = parent;
+		return _components[i];
 	}
 
-	// Methods
-	void addChildren(InputRange!R3DObject children)
+	void insert(Component component)
 	{
-		auto f = children.filter!(c => !_children.contains(c));
-		_children.insert(f);
+		_components.insert(component);
 	}
 
-	void removeChildren(InputRange!R3DObject children)
+	void update(World world, Duration deltaTime)
 	{
-		auto f = children.filter!(c => _children.contains(c));
-		_children.insert(f);
+		foreach (c; _components)
+			c.update(world, this, deltaTime);
 	}
 }

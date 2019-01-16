@@ -9,7 +9,7 @@ DC = dmd $(sources) $(headers) -od=build/obj -of=build/engine $(libraries)
 default: test
 
 test:
-	$(DC) examples/main.d -g -debug
+	$(DC) examples/main.d examples/*/*.d -g -debug
 
 release:
 	$(DC) -O -release -inline
