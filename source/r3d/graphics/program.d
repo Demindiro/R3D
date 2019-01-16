@@ -78,11 +78,19 @@ class Program
 		return setUniform(loc, value);
 	}
 
-	void setView(Window window, Vector3 position, Quaternion rotation)
+	void setView(bool inverted = false, T)(Window window, Vector3 position,
+                                           T rotation)
+	if (is(T == Quaternion) || is(T == Matrix!(float,3,3)))
 	{
 		setUniform("screen_ratio", cast(float)window.width / window.height);
 		setUniform("cam_pos", position);
-		setUniform("cam_rot", rotation.matrix!float.inverse);
+		static if (is(T == Quaternion))
+			auto m = rotation.matrix!float;
+		else
+			auto m = rotation;
+		static if (!inverted)
+			m = m.inverse;
+		setUniform("cam_rot", m);
 	}
 
 	void use()

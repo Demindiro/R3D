@@ -14,9 +14,14 @@ struct Vector2
 	inout auto opBinary(string op, T)(inout(T) c)
 	{
 		static if(is(T == Vector2))
-			return mixin("Vector3(x" ~ op ~ "c.x, y" ~ op ~ "c.y, 0)");
+			return mixin("Vector2(x" ~ op ~ "c.x, y" ~ op ~ "c.y)");
 		else
-			return mixin("Vector3(x" ~ op ~ "c, y" ~ op ~ "c, 0)");
+			return mixin("Vector2(x" ~ op ~ "c, y" ~ op ~ "c)");
+	}
+
+	void opOpAssign(string op, T)(inout(T) c)
+	{
+		this = mixin("this" ~ op[0] ~ "c");
 	}
 
 	enum Vector2 zero  = { x:  0, y:  0 };

@@ -1,5 +1,8 @@
 module r3d.core.matrix;
 
+import r3d.core.vector;
+
+
 struct Matrix(T, size_t _rows, size_t _columns)
 {
 	private T[rows * columns] _data;
@@ -12,12 +15,23 @@ struct Matrix(T, size_t _rows, size_t _columns)
 		_data = data;
 	}
 
+	this(T)(Vector3[rows] cols) if (is(T == double) && columns == 3)
+	{
+		static foreach (i, v; cols)
+		{
+			_data[i * columns + 0] = v.x;
+			_data[i * columns + 1] = v.y;
+			_data[i * columns + 2] = v.z;
+		}
+	}
+
 	ref auto opIndex(size_t i, size_t j)
 	{
 		assert (i < rows);
 		assert (j < columns);
 		return _data[columns * i + j];
 	}
+
 	ref auto opIndex(size_t n)
 	{
 		assert(n < size);
@@ -29,9 +43,48 @@ struct Matrix(T, size_t _rows, size_t _columns)
 		// TODO
 	}
 
+	U opBinary(string op, U)(U c) if (op == "*")
+	{
+		static if (is(U == Matrix))
+		{
+			static assert(columns == c.rows);
+			enum n = columns;
+			auto b = Matrix!(T, rows, c.columns)();
+			static foreach (i; 0 .. b.rows)
+			{
+				static foreach (j; 0 .. b.columns)
+				{
+					b[i,j] = 0;
+					static foreach (k; 0 .. n)
+						b[i,j] += this[i,k] * c[k,j];
+				}
+			}
+		}
+		else static if (is(U == Vector3))
+		{
+			static assert(rows == 3);
+			auto b = U.zero;
+			b.x = c.x * this[0,0] + c.y * this[0,1] + c.z * this[0,2];
+			b.y = c.x * this[1,0] + c.y * this[1,1] + c.z * this[1,2];
+			b.z = c.x * this[2,0] + c.y * this[2,1] + c.z * this[2,2];
+		}
+		return b;
+	}
+
+	auto opBinary(string op, U)(U m)
+	if (is(U == Matrix!(T, rows, columns)) && op != "*" && op != "/")
+	{
+		float[size] r = mixin("this._data[]" ~ op ~ "m._data[]");
+		return Matrix!(T, rows, columns)(r);
+	}
+
+	void opOpAssign(string op, U)(U c)
+	{
+		this = mixin("this" ~ op[0] ~ "c");
+	}
+
 	const(T*) ptr() const { return _data.ptr; };
 
-	// I can't actually believe this works
 	private static auto determinantCut(size_t dim, size_t r)(Matrix!(T,dim,dim) m)
 	{
 		auto m2 = Matrix!(T, dim - 1, dim - 1)();
@@ -70,11 +123,11 @@ struct Matrix(T, size_t _rows, size_t _columns)
 	// TODO: handle divide by 0 (row-swap)
 	auto inverse()
 	{
-			static assert(rows == columns);
+		static assert(rows == columns);
 
-			enum dim = rows; // = columns
-			auto orgM = Matrix!(T, rows, columns)(_data);
-			auto invM = Matrix!(T, rows, columns)();
+		enum dim  = rows;
+		auto orgM = Matrix!(T, rows, columns)(_data);
+		auto invM = Matrix!(T, rows, columns)();
 		static foreach (i; 0 .. rows)
 		{
 			static foreach (j; 0 .. columns)

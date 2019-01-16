@@ -63,8 +63,9 @@ int main()
 	}
 
 	// Yadayada
-	auto cam_rot = Vector3.zero;
-	auto cam_pos = Vector3.back * 10 + Vector3.up * 3;
+	auto camRot = Vector2.zero;
+	auto camRotMat = Matrix!(float,3,3)([1, 0, 0, 0, 1, 0, 0, 0, 1]);
+	auto camPos = Vector3.back * 10 + Vector3.up * 3;
 	auto cursorPrevPos = window.cursorPos;
 	auto sw = StopWatch(AutoStart.yes);
 
@@ -75,11 +76,20 @@ int main()
 		// Determine time passed
 		auto delta  = sw.peek;
 		auto deltaf = delta.total!"usecs" / 1_000_000.0L;
-		sw.reset();
+		sw.reset;
 
 		// Rotate the camera
-		auto drot = window.cursorPos - cursorPrevPos;
-		cam_rot += Vector3(0, -drot.x, 0) / 100;
+		auto dRot = (window.cursorPos - cursorPrevPos) / 100;
+		dRot.x = -dRot.x;
+		camRot -= dRot;
+		
+		camRotMat =  (Matrix!(float,3,3)([1, 0,          0,
+		                                 0, cos(camRot.y), -sin(camRot.y),
+                                         0, sin(camRot.y),  cos(camRot.y)])
+		            * Matrix!(float,3,3)([cos(camRot.x), 0, -sin(camRot.x),
+                                                      0, 1, 0,
+                                          sin(camRot.x), 0,  cos(camRot.x)])
+		             ).inverse;
 		cursorPrevPos = window.cursorPos;
 
 		// Move the camera
@@ -96,14 +106,14 @@ int main()
 			dpos.y += 1;
 		if (window.keyAction(KeyCode.lshift))
 			dpos.y -= 1;
-		double ca = cos(cam_rot.y), sa = sin(cam_rot.y);
-		dpos = Vector3(dpos.x * ca - dpos.z * sa, dpos.y, dpos.x * sa + dpos.z * ca);
-		cam_pos += dpos * deltaf * 3;
+		//if (dpos.x != 0 || dpos.y != 0 || dpos.z != 0) dpos.writeln;
+		dpos = camRotMat * dpos;
+		//if (dpos.x != 0 || dpos.y != 0 || dpos.z != 0) dpos.writeln;
+		//if (dpos.x != 0 || dpos.y != 0 || dpos.z != 0) camRotMat.writeln;
+		camPos += dpos * deltaf * 3;
 
 		// Set the camera
-		Quaternion q;
-		q.eulerAngles = cam_rot;
-		program.setView(window, cam_pos, q);
+		program.setView!true(window, camPos, camRotMat);
 
 		// Update the world
 		world.update(delta);
