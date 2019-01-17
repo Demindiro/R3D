@@ -8,8 +8,13 @@ enum GL_COLOR_BUFFER_BIT = 0x00004000;
 
 enum GL_TRIANGLES        = 0x0004;
 
-enum GL_DEPTH_TEST       = 0x0B71;
 enum GL_LESS             = 0x0201;
+
+enum GL_SRC_ALPHA        = 0x0302;
+enum GL_ONE_MINUS_SRC_ALPHA = 0x0303;
+
+enum GL_BLEND            = 0x0BE2;
+enum GL_DEPTH_TEST       = 0x0B71;
 
 enum GL_TEXTURE_1D       = 0x0DE0;
 enum GL_TEXTURE_2D       = 0x0DE1;
@@ -82,6 +87,7 @@ extern (C)
 	@nogc void glEnable(uint flag);
 	@nogc void glDisable(uint flag);
 	@nogc void glDepthFunc(uint flag);
+	@nogc void glBlendFunc(uint sfactor, uint dfactor);
 	@nogc const(char*) glGetString(uint name);
 	@nogc Error glGetError();
 	@nogc void glFinish();

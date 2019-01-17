@@ -78,9 +78,9 @@ private struct Triangle
 			{
 				auto p = t.points[j];
 				auto off = i * 27 + j * 9;
-				arr[off + 0 .. off + 3] = p.vertex .toFloat;
-				arr[off + 3 .. off + 6] = p.texture.toFloat;
-				arr[off + 6 .. off + 9] = p.normal .toFloat;
+				arr[off + 0 .. off + 3] = p.vertex .elements.to!(float[3]);
+				arr[off + 3 .. off + 6] = p.texture.elements.to!(float[3]);
+				arr[off + 6 .. off + 9] = p.normal .elements.to!(float[3]);
 			}
 		}
 		return arr;
@@ -138,7 +138,6 @@ class Mesh
 			if (line == "" || line[0] == '#')
 				continue;
 			auto args = line.split();
-			args.writeln;
 			auto type = args[0];
 			if (type == "v")
 			{

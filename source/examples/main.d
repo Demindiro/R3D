@@ -7,6 +7,8 @@ import std.string;
 import r3d;
 import motion;
 
+enum dimX = 10;
+enum dimY = 10;
 
 double previous_seconds = 0;
 int frame_count;
@@ -36,7 +38,7 @@ int main()
 
 	// Create some instances sharing the same mesh
 	import std.random;
-	StandaloneMeshInstance[9] instances;
+	StandaloneMeshInstance[dimX * dimY] instances;
 	foreach (ref e; instances[])
 		e = new StandaloneMeshInstance(mesh);
 
@@ -58,14 +60,14 @@ int main()
 	{
 		auto obj = new R3DObject;
 		obj.insert(new Motion(e));
-		obj.position = Vector3(4 * (i % 3 - 1f), 0, 4 * (i / 3 - 1f));
+		obj.position = Vector3(4 * (i % dimX), 0, 4 * (i / dimY));
 		world.insert(obj);
 	}
 
 	// Yadayada
-	auto camRot = Vector2.zero;
+	auto camRot = Vector!2(0, 0);
 	auto camRotMat = Matrix!(float,3,3)([1, 0, 0, 0, 1, 0, 0, 0, 1]);
-	auto camPos = Vector3.back * 10 + Vector3.up * 3;
+	auto camPos = Vector!3(0, 0, 0);
 	auto cursorPrevPos = window.cursorPos;
 	auto sw = StopWatch(AutoStart.yes);
 
@@ -82,7 +84,7 @@ int main()
 		auto dRot = (window.cursorPos - cursorPrevPos) / 100;
 		dRot.x = -dRot.x;
 		camRot -= dRot;
-		
+
 		camRotMat =  (Matrix!(float,3,3)([1, 0,          0,
 		                                 0, cos(camRot.y), -sin(camRot.y),
                                          0, sin(camRot.y),  cos(camRot.y)])
@@ -93,7 +95,7 @@ int main()
 		cursorPrevPos = window.cursorPos;
 
 		// Move the camera
-		Vector3 dpos = Vector3.zero;
+		Vector!3 dpos = Vector!3(0, 0, 0);
 		if (window.keyAction(KeyCode.w))
 			dpos.z += 1;
 		if (window.keyAction(KeyCode.s))
@@ -106,10 +108,7 @@ int main()
 			dpos.y += 1;
 		if (window.keyAction(KeyCode.lshift))
 			dpos.y -= 1;
-		//if (dpos.x != 0 || dpos.y != 0 || dpos.z != 0) dpos.writeln;
 		dpos = camRotMat * dpos;
-		//if (dpos.x != 0 || dpos.y != 0 || dpos.z != 0) dpos.writeln;
-		//if (dpos.x != 0 || dpos.y != 0 || dpos.z != 0) camRotMat.writeln;
 		camPos += dpos * deltaf * 3;
 
 		// Set the camera

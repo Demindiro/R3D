@@ -38,13 +38,13 @@ private extern (C) void cursorEnterCallback(GLFWwindow window, bool entered)
 // Classes
 class Window
 {
-	private GLFWwindow _window;
-	private int _width, _height;
-	private string _title;
-	private bool _closed = false;
+	private GLFWwindow     _window;
+	private int            _width, _height;
+	private string         _title;
+	private bool           _closed        = false;
 	private KeyAction[512] _keyActions;
-	private Vector2        _cursorPos = Vector2.zero;
-	private bool           _cursorEntered; 
+	private Vector!2       _cursorPos     = Vector!2(0, 0);
+	private bool           _cursorEntered = false;
 	version (OSX) private ubyte _osx_fixed = 0;
 
 	this(int width, int height, string title)
@@ -61,9 +61,11 @@ class Window
 		glfwSetCursorPosCallback(_window, &cursorPosCallback);
 		glfwSetCursorEnterCallback(_window, &cursorEnterCallback);
 
+		//glEnable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_MULTISAMPLE);
 		glDepthFunc(GL_LESS);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		checkForGlError();
 
 		_windows[_window] = this;

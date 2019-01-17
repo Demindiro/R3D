@@ -2,48 +2,103 @@ module r3d.core.matrix;
 
 import r3d.core.vector;
 
+/**
+This structure represents a two-dimensional matrix. It can be used to store
+any kind of data, though it is designed to only work with scalars.
 
+Params:
+	T = The type to store.
+	_rows = The amount of columns this matrix has.
+	_columns = The amount of rows this matrix has.
+*/
 struct Matrix(T, size_t _rows, size_t _columns)
 {
-	private T[rows * columns] _data;
+	T[rows * columns] elements;
 	enum rows    = _rows;
 	enum columns = _columns;
 	enum size    = rows * columns;
-	
-	this (T[rows * columns] data)
+	alias elements this;
+
+	/**
+	Creates a new matrix by copying the given array.
+
+	Params:
+		data = The data to copy.
+	*/
+	this (T[rows * columns] data) @nogc pure
 	{
-		_data = data;
+		elements = data;
 	}
 
-	this(T)(Vector3[rows] cols) if (is(T == double) && columns == 3)
+	/**
+	Creates a new matrix by copying the *column* vectors in the given array.
+
+	Params:
+		cols = The column vectors to copy.
+	*/
+	this(T)(Vector3[rows] cols) @nogc pure if (is(T == double) && columns == 3)
 	{
 		static foreach (i, v; cols)
 		{
-			_data[i * columns + 0] = v.x;
-			_data[i * columns + 1] = v.y;
-			_data[i * columns + 2] = v.z;
+			elements[i * columns + 0] = v.x;
+			elements[i * columns + 1] = v.y;
+			elements[i * columns + 2] = v.z;
 		}
 	}
 
-	ref auto opIndex(size_t i, size_t j)
+	/**
+	Returns the element at the given coordinate.
+
+	Params:
+		i = The index of the row.
+		j = The index of the column.
+
+	Returns: The element at the given coordinate.
+	*/
+	ref auto opIndex(size_t i, size_t j) @nogc pure
 	{
 		assert (i < rows);
 		assert (j < columns);
-		return _data[columns * i + j];
+		return elements[columns * i + j];
 	}
 
-	ref auto opIndex(size_t n)
+	/**
+	Returns the element at the given index in the internal array. This is useful
+	if you need to perform the same operation on all elements regardless of
+	coordinate.
+
+	Params:
+		n = The index of the element in the internal array.
+
+	Returns: The element at the given index.
+	*/
+	ref auto opIndex(size_t n) @nogc pure
 	{
-		assert(n < size);
-		return _data[n];
+		return elements[n];
 	}
 
-	ref auto opIndex(size_t[2] i, size_t[2] j)
+	/**
+	TODO
+	*/
+	ref auto opIndex(size_t[2] i, size_t[2] j) @nogc pure
 	{
 		// TODO
 	}
 
-	U opBinary(string op, U)(U c) if (op == "*")
+	/**
+	Performs multiplication with the given element.
+
+	Params:
+		op = Always "*".
+		U = Either a matrix, a vector or a scalar.
+		c = The value of the left-hand variable.
+
+	Returns:
+		A matrix if two matrices are multiplied.
+		A vector if a matrix and a vector are multiplied.
+		A matrix if a matrix and a scalar are multiplied.
+	*/
+	U opBinary(string op, U)(U c) @nogc pure if (op == "*")
 	{
 		static if (is(U == Matrix))
 		{
@@ -63,29 +118,57 @@ struct Matrix(T, size_t _rows, size_t _columns)
 		else static if (is(U == Vector3))
 		{
 			static assert(rows == 3);
-			auto b = U.zero;
+			auto b = U(0);
 			b.x = c.x * this[0,0] + c.y * this[0,1] + c.z * this[0,2];
 			b.y = c.x * this[1,0] + c.y * this[1,1] + c.z * this[1,2];
 			b.z = c.x * this[2,0] + c.y * this[2,1] + c.z * this[2,2];
 		}
+		else static if (is(U : real))
+		{
+			auto b = Matrix!(T, rows, c.columns);
+			foreach(ref e; b)
+				e *= c;
+		}
 		return b;
 	}
 
-	auto opBinary(string op, U)(U m)
+	/**
+	Performs any operation that is not multiplication or division.
+
+	Params:
+		op = Any operator except for "*" and "/".
+		U = A matrix with the same type and dimensions as this matrix.
+		m = The matrix to perform the operation with.
+
+	Returns: A matrix with the same type and dimensions as this matrix.
+	*/
+	auto opBinary(string op, U)(U m) @nogc pure
 	if (is(U == Matrix!(T, rows, columns)) && op != "*" && op != "/")
 	{
-		float[size] r = mixin("this._data[]" ~ op ~ "m._data[]");
+		float[size] r = mixin("this.elements[]" ~ op ~ "m._data[]");
 		return Matrix!(T, rows, columns)(r);
 	}
 
-	void opOpAssign(string op, U)(U c)
+	/**
+	Performs a opBinary operation on itself, if applicable.
+
+	Params:
+		op = The operator to apply.
+		U = The type of the element to perform the operation with.
+		c = The element to perform the operation with.
+	*/
+	void opOpAssign(string op, U)(U c) @nogc pure
 	{
 		this = mixin("this" ~ op[0] ~ "c");
 	}
 
-	const(T*) ptr() const { return _data.ptr; };
+	/**
+	Returns: a pointer to the internal array.
+	*/
+	const(T*) ptr() const @nogc pure { return elements.ptr; };
 
 	private static auto determinantCut(size_t dim, size_t r)(Matrix!(T,dim,dim) m)
+	@nogc pure
 	{
 		auto m2 = Matrix!(T, dim - 1, dim - 1)();
 		static foreach (i; 0 .. dim)
@@ -100,7 +183,7 @@ struct Matrix(T, size_t _rows, size_t _columns)
 		return m2;
 	}
 
-	private static auto determinantStep(size_t dim)(Matrix!(T,dim,dim) m)
+	private static auto determinantStep(size_t dim)(Matrix!(T,dim,dim) m) @nogc pure
 	{
 		T sum = 0;
 		static if (dim == 1)
@@ -114,19 +197,29 @@ struct Matrix(T, size_t _rows, size_t _columns)
 		return sum;
 	}
 
-	auto determinant()
+	/**
+	Returns: The determinant of this matrix.
+	*/
+	auto determinant() @nogc pure
 	{
 			return determinantStep(this);
 	}
 
 
-	// TODO: handle divide by 0 (row-swap)
-	auto inverse()
+	/**
+	Returns: The inverse of this matrix.
+
+	Bugs:
+		If a pivot is zero, the algorithm won't attempt to correct the value
+		correct the value before dividing, causing the matrix to become invalid.
+		It is also unable to recognize matrices that cannot be inverted.
+	*/
+	auto inverse() @nogc pure
 	{
 		static assert(rows == columns);
 
 		enum dim  = rows;
-		auto orgM = Matrix!(T, rows, columns)(_data);
+		auto orgM = Matrix!(T, rows, columns)(elements);
 		auto invM = Matrix!(T, rows, columns)();
 		static foreach (i; 0 .. rows)
 		{
@@ -159,13 +252,40 @@ struct Matrix(T, size_t _rows, size_t _columns)
 		return invM;
 	}
 
+	/**
+	Returns: a multiline string representation of the matrix.
+	*/
 	string toString() const @safe
 	{
 		import std.range : chunks;
 		import std.conv  : to;
 		string str = "";
-		foreach (r; chunks(_data[], columns))
+		foreach (r; chunks(elements[0 .. $ - 3], columns))
 			str ~= r.to!string ~ "\n";
+		str ~= elements[$ - 3 .. $].to!string;
 		return str;
 	}
+}
+
+unittest
+{
+	import std.math;
+	import std.random;
+	import std.stdio;
+	bool cmp(T, size_t r, size_t c)(Matrix!(T,r,c) a, Matrix!(T,r,c) b)
+	{
+		foreach (i; 0 .. a.size)
+		{
+			if (abs(a[i] - b[i]) > 10e-10)
+				return false;
+		}
+		return true;
+	}
+	auto m = Matrix!(real,3,3)([ 5.43, 33.55, 30.43,
+	                            44.43, 89.43, 34.11,
+	                            11.11, 42.22, 99.99]);
+	writeln(m);
+	writeln(m.inverse);
+	writeln(m.inverse * m);
+	assert(cmp(m * m.inverse, Matrix!(real,3,3)([1,0,0,0,1,0,0,0,1])));
 }

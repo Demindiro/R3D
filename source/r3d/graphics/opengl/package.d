@@ -1,4 +1,4 @@
 module r3d.graphics.gl;
 
-public import r3d.graphics.gl.gl;
-public import r3d.graphics.gl.glfw;
+public import r3d.graphics.opengl.gl;
+public import r3d.graphics.opengl.glfw;

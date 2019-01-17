@@ -34,8 +34,8 @@ void main()
 
 	// Calculate the position relative to the camera
 	gl_Position = vec4(cam_rot * (pos - cam_pos), 1);
-	gl_Position.w = 1 + gl_Position.z / 0.5;
+	gl_Position.w = 1 + gl_Position.z;
 
-	// Scale the vieworldposort properly
+	// Scale the viewport properly
 	gl_Position.x /= screen_ratio;
 }
