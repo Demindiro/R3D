@@ -7,8 +7,8 @@ import std.string;
 import r3d;
 import motion;
 
-enum dimX = 10;
-enum dimY = 10;
+enum dimX = 100;
+enum dimY = 100;
 
 double previous_seconds = 0;
 int frame_count;
@@ -37,10 +37,11 @@ int main()
 	auto mesh = Mesh.fromFile("mesh.obj");
 
 	// Create some instances sharing the same mesh
-	import std.random;
-	StandaloneMeshInstance[dimX * dimY] instances;
-	foreach (ref e; instances[])
-		e = new StandaloneMeshInstance(mesh);
+	//import std.random;
+	//StandaloneMeshInstance[dimX * dimY] instances;
+	auto batch = new MeshInstanceBatch(mesh);
+	//foreach (ref e; instances[])
+	//	e = new StandaloneMeshInstance(mesh);
 
 	// Load the shaders
 	auto source_vertex   = readText("shaders/basic.vert");
@@ -56,9 +57,10 @@ int main()
 
 	// Create the world
 	auto world = new World;
-	foreach (i, e; instances[])
+	foreach (i; 0 .. dimX * dimY)
 	{
 		auto obj = new R3DObject;
+		auto e   = batch.createInstance();
 		obj.insert(new Motion(e));
 		obj.position = Vector3(4 * (i % dimX), 0, 4 * (i / dimY));
 		world.insert(obj);
@@ -119,8 +121,9 @@ int main()
 
 		// Render
 		window.clear();
-		foreach (e; instances[])
-			e.draw();
+		batch.draw();
+		//foreach (e; instances[])
+		//	e.draw();
 		window.swapBuffers();
 		window.poll();
 

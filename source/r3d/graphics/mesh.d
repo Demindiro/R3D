@@ -40,7 +40,7 @@ private struct Triangle
 		norm[0] = norm[1] = norm[2] = n;
 		foreach (i; 0 .. 3)
 			points[i] = Point(vertices[i], text[i], norm[i]);
-	} 
+	}
 
 	this(Vector3[3] vertices, Vector3[3] textures, Vector3[3] normals)
 	{
@@ -220,55 +220,39 @@ class Mesh
 		checkForGlError();
 	}
 
-	void draw()
+	void draw(size_t count = 1)
 	{
 		glBindVertexArray(_vao);
-		glDrawArrays(GL_TRIANGLES, 0, _vec_count);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, _vec_count, count);
 		checkForGlError();
 	}
 }
 
 
 
-abstract class MeshInstance
+interface MeshInstance
 {
-	private   Quaternion _orientation = { x: 0, y: 0, z: 0, w: 1 };
-	private   Vector3    _position = { 0, 0, 0 };
-	private   Vector3    _scale = { 1, 1, 1 };
-	protected bool       _dirty = true;
-	          bool       active = true;
+	Quaternion orientation();
+	Vector3    position();
+	Vector3    scale();
 
-	@property auto orientation() { return _orientation; }
-	@property auto position()    { return _position;    }
-	@property auto scale()       { return _scale;       }
-
-	@property void orientation(Quaternion newOrientation)
-	{
-		_orientation = newOrientation;
-		_dirty = true;
-	}
-	@property void position(Vector3 newPosition)
-	{
-		_position = newPosition;
-		_dirty = true;
-	}
-	@property void scale(Vector3 newScale)
-	{
-		_scale = newScale;
-		_dirty = true;
-	}
-
-	abstract void draw();
+	void orientation(Quaternion newOrientation);
+	void position(Vector3 newPosition);
+	void scale(Vector3 newScale);
 }
 
 
 
 class StandaloneMeshInstance : MeshInstance
 {
+	private Quaternion _orientation = { x: 0, y: 0, z: 0, w: 1 };
+	private Vector3    _position = { 0, 0, 0 };
+	private Vector3    _scale = { 1, 1, 1 };
 	private Mesh   _mesh;
 	private Buffer _world_pos;
 	private Buffer _world_rot;
 	private Buffer _world_scl;
+	protected bool _dirty = true;
 
 	this(Mesh mesh)
 	{
@@ -281,7 +265,32 @@ class StandaloneMeshInstance : MeshInstance
 		_world_scl = vbos[2];
 	}
 
-	void setVertexBuffers()
+	~this()
+	{
+		// TODO
+	}
+
+	Quaternion orientation() { return _orientation; }
+	Vector3    position()    { return _position;    }
+	Vector3    scale()       { return _scale;       }
+
+	void orientation(Quaternion newOrientation)
+	{
+		_orientation = newOrientation;
+		_dirty = true;
+	}
+	void position(Vector3 newPosition)
+	{
+		_position = newPosition;
+		_dirty = true;
+	}
+	void scale(Vector3 newScale)
+	{
+		_scale = newScale;
+		_dirty = true;
+	}
+
+	private void setVertexBuffers()
 	{
 		float[3] pos = [position.x, position.y, position.z];
 		auto     rot = orientation.matrix!float;
@@ -291,7 +300,7 @@ class StandaloneMeshInstance : MeshInstance
 		setVertexBufferData(_world_scl, scl.ptr, scl.length * scl[0].sizeof);
 	}
 
-	override void draw()
+	void draw()
 	{
 		if (_dirty)
 			setVertexBuffers();
@@ -308,27 +317,63 @@ class MeshInstanceBatch
 {
 	class SharedMeshInstance : MeshInstance
 	{
-		this(MeshInstanceBatch b)
-		{
+		private size_t _index;
+		private MeshInstanceBatch _batch;
 
-		}
-		override void draw()
+		private this(MeshInstanceBatch batch, size_t index)
 		{
-			// TODO
-			throw new GraphicsException("Not implemented");
+			_batch = batch;
+			_index = index;
+		}
+
+		Quaternion orientation() { return _batch._orientations[_index]; }
+		Vector3    position()    { return _batch._positions[_index];    }
+		Vector3    scale()       { return _batch._scales[_index];       }
+
+		void orientation(Quaternion newOrientation)
+		{
+			_batch._orientations[_index] = newOrientation;
+		}
+		void position(Vector3 newPosition)
+		{
+			_batch._positions[_index] = newPosition;
+		}
+		void scale(Vector3 newScale)
+		{
+			_batch._scales[_index] = newScale;
 		}
 	}
 
-	private Mesh _mesh;
-	private auto _instances = Array!SharedMeshInstance();
-	
+	import r3d.core.matrix;
+	private Mesh   _mesh;
+	private Buffer _world_pos;
+	private Buffer _world_rot;
+	private Buffer _world_scl;
+	private auto _instances    = Array!SharedMeshInstance();
+	private auto _orientations = Array!Quaternion();
+	private auto _positions    = Array!Vector3();
+	private auto _scales       = Array!Vector3();
+	private auto _orientations_cache = Array!(Matrix!(float,3,3))();
+	private auto _positions_cache = Array!(float[3])();
+	private auto _scales_cache = Array!(float[3])();
 
 	this(Mesh mesh)
 	{
 		_mesh = mesh;
+		Buffer[3] vbos;
+		glGenBuffers(3, vbos.ptr);
+		checkForGlError();
+		_world_pos = vbos[0];
+		_world_rot = vbos[1];
+		_world_scl = vbos[2];
 	}
 
-	@property final auto length() { return _instances.length; }
+	~this()
+	{
+		// TODO
+	}
+
+	final auto length() { return _instances.length; }
 	alias opDollar = length;
 
 	final SharedMeshInstance opIndex(size_t i)
@@ -336,18 +381,47 @@ class MeshInstanceBatch
 		return _instances[i];
 	}
 
-	SharedMeshInstance createMeshInstance()
+	SharedMeshInstance createInstance()
 	{
-		auto instance = new SharedMeshInstance(this);
+		auto instance = new SharedMeshInstance(this, _instances.length);
 		_instances.insert(instance);
+		_orientations.insert(Quaternion(0,0,0,1));
+		_positions.insert(Vector3(0,0,0));
+		_scales.insert(Vector3(1,1,1));
+		_orientations_cache.length = _instances.length;
+		_positions_cache.length = _instances.length;
+		_scales_cache.length = _scales.length;
 		return instance;
 	}
 
+	private void setVertexBuffers()
+	{
+		import std.parallelism, std.range;
+		foreach (i; parallel(iota(0,_instances.length)))
+		{
+			_orientations_cache[i] = _orientations[i].matrix!float;
+			auto e = _positions[i].elements;
+			float[3] v = [e[0], e[1], e[2]];
+			_positions_cache[i] = v;
+			e = _scales[i].elements;
+			v = [e[0], e[1], e[2]];
+			_scales_cache[i] = v;
+		}
+		setVertexBufferData(_world_pos, &_positions_cache[0],
+		                    _instances.length * _positions_cache[0].sizeof);
+		setVertexBufferData(_world_rot, &_orientations_cache[0],
+		                    _instances.length * _orientations_cache[0].sizeof);
+		setVertexBufferData(_world_scl, &_scales_cache[0],
+		                    _instances.length * _scales_cache[0].sizeof);
+	}
+
+
 	void draw()
 	{
-		for (size_t i = 0; i < length; i++)
-		{
-			//if (
-		}
+		setVertexBuffers();
+		_mesh.setInstanceBuffer(_world_pos, 3, 1);
+		_mesh.setInstanceBuffer(_world_rot, 4, 1, 3);
+		_mesh.setInstanceBuffer(_world_scl, 7, 1);
+		_mesh.draw(_instances.length);
 	}
 }

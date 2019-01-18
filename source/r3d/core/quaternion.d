@@ -14,7 +14,7 @@ struct Quaternion
 	{
 		struct
 		{
-			double w, x, y, z;
+			double x, y, z, w;
 		}
 		double[4] elements;
 	}
