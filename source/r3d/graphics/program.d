@@ -78,8 +78,7 @@ class Program
 		return setUniform(loc, value);
 	}
 
-	void setView(bool inverted = false, T)(Window window, Vector3 position,
-                                           T rotation)
+	void setView(bool inverted, T)(Window window, Vector3 position, T rotation)
 	if (is(T == Quaternion) || is(T == Matrix!(float,3,3)))
 	{
 		setUniform("screen_ratio", cast(float)window.width / window.height);

@@ -8,7 +8,13 @@ enum GL_COLOR_BUFFER_BIT = 0x00004000;
 
 enum GL_TRIANGLES        = 0x0004;
 
-enum GL_LESS             = 0x0201;
+enum GL_LESS     = 0x0201;
+enum GL_EQUAL    = 0x0202;
+enum GL_LEQUAL   = 0x0203;
+enum GL_GREATER  = 0x0204;
+enum GL_NOTEQUAL = 0x0205;
+enum GL_GEQUAL   = 0x0206;
+enum GL_ALWAYS   = 0x0207;
 
 enum GL_SRC_ALPHA        = 0x0302;
 enum GL_ONE_MINUS_SRC_ALPHA = 0x0303;
@@ -19,22 +25,53 @@ enum GL_DEPTH_TEST       = 0x0B71;
 enum GL_TEXTURE_1D       = 0x0DE0;
 enum GL_TEXTURE_2D       = 0x0DE1;
 
-enum GL_FLOAT            = 0x1406;
+enum GL_BYTE              = 0x1400;
+enum GL_UNSIGNED_BYTE     = 0x1401;
+enum GL_SHORT             = 0x1402;
+enum GL_UNSIGNED_SHORT    = 0x1403;
+enum GL_INT               = 0x1404;
+enum GL_UNSIGNED_INT      = 0x1405;
+enum GL_FLOAT             = 0x1406;
+enum GL_DOUBLE            = 0x140A;
+enum GL_HALF_FLOAT        = 0x140B;
+enum GL_FIXED             = 0x140C;
+enum GL_INT64_ARB         = 0x140E;
+enum GL_INT64_NV          = 0x140E; // Uhm...
+enum GL_UNSIGNED_INT64_NV = 0x140F;
+
 
 enum GL_MODELVIEW        = 0x1700;
 enum GL_PROJECTION       = 0x1701;
+
+enum GL_RGB  = 0x1907;
+enum GL_RGBA = 0x1908;
+
 
 enum GL_RENDERER         = 0x1F01;
 enum GL_VERSION          = 0x1F02;
 
 enum GL_MULTISAMPLE      = 0x809D;
 
+enum GL_TEXTURE_CUBE_MAP            = 0x8513;
+enum GL_TEXTURE_BINDING_CUBE_MAP    = 0x8514;
+enum GL_TEXTURE_CUBE_MAP_POSITIVE_X = 0x8515;
+enum GL_TEXTURE_CUBE_MAP_NEGATIVE_X = 0x8516;
+enum GL_TEXTURE_CUBE_MAP_POSITIVE_Y = 0x8517;
+enum GL_TEXTURE_CUBE_MAP_NEGATIVE_Y = 0x8518;
+enum GL_TEXTURE_CUBE_MAP_POSITIVE_Z = 0x8519;
+enum GL_TEXTURE_CUBE_MAP_NEGATIVE_Z = 0x851A;
+
 enum GL_ARRAY_BUFFER     = 0x8892;
 enum GL_STATIC_DRAW      = 0x88E4;
 enum GL_DYNAMIC_DRAW     = 0x88E8;
 
-enum GL_FRAGMENT_SHADER  = 0x8B30;
-enum GL_VERTEX_SHADER    = 0x8B31;
+// Shaders and programmes
+enum GL_VERTEX_SHADER          = 0x8B31;
+enum GL_TESS_EVALUATION_SHADER = 0x8E87;
+enum GL_TESS_CONTROL_SHADER    = 0x8E88;
+enum GL_GEOMETRY_SHADER        = 0x8DD9;
+enum GL_FRAGMENT_SHADER        = 0x8B30;
+enum GL_COMPUTE_SHADER         = 0x91B9;
 
 enum GL_COMPILE_STATUS   = 0x8B81;
 enum GL_LINK_STATUS      = 0x8B82;
@@ -46,6 +83,7 @@ enum GL_CLAMP_TO_EDGE    = 0x812F;
 enum GL_CLAMP_TO_BORDER  = 0x812D;
 enum GL_TEXTURE_WRAP_S       = 0x2802;
 enum GL_TEXTURE_WRAP_T       = 0x2803;
+enum GL_TEXTURE_WRAP_R       = 0x8072;
 enum GL_TEXTURE_BORDER_COLOR = 0x1004;
 enum GL_NEAREST = 0x2600;
 enum GL_LINEAR  = 0x2601;
@@ -55,6 +93,11 @@ enum GL_NEAREST_MIPMAP_LINEAR  = 0x2702;
 enum GL_LINEAR_MIPMAP_LINEAR   = 0x2703;
 enum GL_TEXTURE_MAG_FILTER = 0x2800;
 enum GL_TEXTURE_MIN_FILTER = 0x2801;
+static foreach (i; 0 .. 32)
+{
+	import std.conv : to;
+	mixin("enum GL_TEXTURE" ~ i.to!string ~ "=" ~ (0x84C0 + i).to!string ~ ";");
+}
 
 enum Error
 {
@@ -88,6 +131,7 @@ extern (C)
 	@nogc void glEnable(uint flag);
 	@nogc void glDisable(uint flag);
 	@nogc void glDepthFunc(uint flag);
+	@nogc void glDepthMask(bool enable);
 	@nogc void glBlendFunc(uint sfactor, uint dfactor);
 	@nogc const(char*) glGetString(uint name);
 	@nogc Error glGetError();
@@ -188,6 +232,10 @@ extern (C)
 	@nogc void glTexParameteri(uint target, uint pname, int param);
 	@nogc void glTexParameterfv(uint target, uint pname, const(float*) params);
 	@nogc void glTexParameteriv(uint target, uint pname, const(int*) params);
+	@nogc void glTexImage2D(uint target, int level, uint internalFormat,
+	                        size_t width, size_t height, int border, uint format,
+	                        uint type, const(void*) data);
+	@nogc void glActiveTexture(uint texture);
 
 	// Rendering
 	@nogc void glDrawArrays(uint mode, int first, size_t count);

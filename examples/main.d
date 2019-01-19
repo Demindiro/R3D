@@ -11,11 +11,13 @@ import std.string;
 import r3d;
 
 /**
-These determine the amount of objects in the X and Z dimensions
+These values determine the amount of objects in the X and Z dimensions
 */
-enum dimX = 100;
+enum dimX = 20;
 /// Ditto
-enum dimY = 100;
+enum dimY = 20;
+
+enum cameraDeadZone = 0.001;
 
 
 /**
@@ -85,17 +87,19 @@ int main()
 	auto mesh = Mesh.fromFile("mesh.obj");
 
 	// Create some instances sharing the same mesh
-	//import std.random;
-	//StandaloneMeshInstance[dimX * dimY] instances;
 	auto batch = new MeshInstanceBatch(mesh);
-	//foreach (ref e; instances[])
-	//	e = new StandaloneMeshInstance(mesh);
 
 	// Load the shaders
 	auto source_vertex   = readText("shaders/basic.vert");
 	auto source_fragment = readText("shaders/basic.frag");
 	auto vertex   = new   VertexShader(source_vertex);
 	auto fragment = new FragmentShader(source_fragment);
+
+	// Create a skybox
+	auto skybox = new Skybox("skybox/up.tga", "skybox/down.tga",
+	                         "skybox/right.tga", "skybox/left.tga",
+	                         "skybox/front.tga", "skybox/back.tga",
+	                         "shaders/skybox.vert", "shaders/skybox.frag");
 
 	// Create the program
 	auto program = new Program;
@@ -122,7 +126,6 @@ int main()
 	auto sw = StopWatch(AutoStart.yes);
 
 	// ╰(✿˙ᗜ˙)੭━☆ﾟ.*･｡ﾟ
-	program.use;
 	while (!window.shouldClose)
 	{
 		// Determine time passed
@@ -134,10 +137,14 @@ int main()
 		auto dRot = (window.cursorPos - cursorPrevPos) / 100;
 		dRot.x = -dRot.x;
 		camRot -= dRot;
+		if (camRot.y < -PI_2 + cameraDeadZone)
+			camRot.y = -PI_2 + cameraDeadZone;
+		else if (camRot.y > PI_2 - cameraDeadZone)
+			camRot.y = PI_2 - cameraDeadZone;
 
 		camRotMat =  (Matrix!(float,3,3)([1, 0,          0,
-		                                 0, cos(camRot.y), -sin(camRot.y),
-                                         0, sin(camRot.y),  cos(camRot.y)])
+		                                  0, cos(camRot.y), -sin(camRot.y),
+		                                 0, sin(camRot.y),  cos(camRot.y)])
 		            * Matrix!(float,3,3)([cos(camRot.x), 0, -sin(camRot.x),
                                                       0, 1, 0,
                                           sin(camRot.x), 0,  cos(camRot.x)])
@@ -159,21 +166,26 @@ int main()
 		if (window.keyAction(KeyCode.lshift))
 			dpos.y -= 1;
 		dpos = camRotMat * dpos;
-		camPos += dpos * deltaf * 3;
+		camPos += dpos * deltaf * 10;
 
 		// Set the camera
-		program.setView!true(window, camPos, camRotMat);
 
 		// Update the world
 		world.update(delta);
 
 		// Render
-		window.clear();
-		batch.draw();
-		//foreach (e; instances[])
-		//	e.draw();
-		window.swapBuffers();
-		window.poll();
+		window.clear;
+
+		program.use;
+		program.setView!true(window, camPos, camRotMat);
+		batch .draw;
+
+		skybox.use;
+		skybox.setView!true(window, camRotMat);
+		skybox.draw;
+
+		window.swapBuffers;
+		window.poll;
 
 		// "Statistics"
 		_update_fps_counter(window);

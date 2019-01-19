@@ -1,0 +1,19 @@
+#version 400
+
+uniform mat3 cam_rot;
+
+void main()
+{
+	vec4 pos = gl_in[0].gl_Position;
+	for (size_t x = -1; x <= 1; x += 2)
+	{
+		for (size_t y = -1; y <= 1; y += 2)
+		{
+			for (size_t z = -1; z <= 1; z += 2)
+			{
+				size_t i = x + y * 2 + z * 4;
+				gl_count[i].
+			}
+		}
+	}
+}

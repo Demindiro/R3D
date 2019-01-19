@@ -2,9 +2,10 @@ module r3d.graphics;
 
 public import r3d.graphics.exceptions;
 public import r3d.graphics.mesh;
-public import r3d.graphics.window;
-public import r3d.graphics.shader;
 public import r3d.graphics.program;
+public import r3d.graphics.shader;
+public import r3d.graphics.texture;
+public import r3d.graphics.window;
 
 import std.conv : to;
 import r3d.graphics.opengl.glfw;
@@ -60,9 +61,9 @@ shared static ~this()
 
 void checkForGlError()
 {
-	auto err = glGetError();
-	if (err)
-		throw new GlException(err, __FILE__, __LINE__);
+	//auto err = glGetError();
+	//if (err)
+	//	throw new GlException(err, __FILE__, __LINE__);
 }
 
 

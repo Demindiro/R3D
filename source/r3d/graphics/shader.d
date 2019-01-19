@@ -45,10 +45,42 @@ class VertexShader : Shader
 	}
 }
 
+class TesselationEvaluationShader : Shader
+{
+	this(string source)
+	{
+		super(source, GL_TESS_EVALUATION_SHADER);
+	}
+}
+
+class TesselationControlShader : Shader
+{
+	this(string source)
+	{
+		super(source, GL_TESS_CONTROL_SHADER);
+	}
+}
+
+class GeometryShader : Shader
+{
+	this(string source)
+	{
+		super(source, GL_GEOMETRY_SHADER);
+	}
+}
+
 class FragmentShader : Shader
 {
 	this(string source)
 	{
 		super(source, GL_FRAGMENT_SHADER);
+	}
+}
+
+class ComputeShader : Shader
+{
+	this(string source)
+	{
+		super(source, GL_COMPUTE_SHADER);
 	}
 }

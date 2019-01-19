@@ -18,38 +18,37 @@ void setVertexBufferData(Buffer b, const(void*) ptr, size_t len)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, b);
 	glBufferData(GL_ARRAY_BUFFER, len, ptr, GL_STATIC_DRAW);
-	checkForGlError();
 }
 
 
-private struct Triangle
+struct Triangle
 {
 	private struct Point
 	{
-		Vector3 vertex;
-		Vector3 texture;
-		Vector3 normal;
+		Vector!3 vertex;
+		Vector!3 texture;
+		Vector!3 normal;
 	};
 
 	Point[3] points;
 
-	this(Vector3[3] vertices)
+	this(Vector!3[3] vertices)
 	{
-		Vector3[3] text, norm;
+		Vector!3[3] text, norm;
 		auto n = cross(vertices[1] - vertices[0], vertices[2] - vertices[0]);
 		norm[0] = norm[1] = norm[2] = n;
 		foreach (i; 0 .. 3)
 			points[i] = Point(vertices[i], text[i], norm[i]);
 	}
 
-	this(Vector3[3] vertices, Vector3[3] textures, Vector3[3] normals)
+	this(Vector!3[3] vertices, Vector!3[3] textures, Vector!3[3] normals)
 	{
 		foreach (i; 0 .. 3)
 			points[i] = Point(vertices[i], textures[i], normals[i]);
 	}
 
-	static auto splitPolygon(const Vector3[] vertices, const Vector3[] textures,
-	                         const Vector3[] normals)
+	static auto splitPolygon(const Vector!3[] vertices, const Vector!3[] textures,
+	                         const Vector!3[] normals)
 	{
 		assert(vertices.length == textures.length);
 		assert(vertices.length == normals .length);
@@ -88,13 +87,13 @@ private struct Triangle
 }
 
 
-class Mesh
+final class Mesh
 {
 	private Buffer _vbo;
 	private VertexArray _vao;
 	private uint _vec_count;
 
-	private this(Array!Triangle triangles)
+	this(Range)(Range triangles)
 	{
 		if (triangles.length == 0)
 			throw new CorruptFileException("No polygons");
@@ -128,9 +127,9 @@ class Mesh
 	static Mesh fromFile(string path)
 	{
 		auto file      = File(path);
-		auto geomv     = Array!Vector3();
-		auto textv     = Array!Vector3();
-		auto normv     = Array!Vector3();
+		auto geomv     = Array!(Vector!3)();
+		auto textv     = Array!(Vector!3)();
+		auto normv     = Array!(Vector!3)();
 		auto triangles = Array!Triangle();
 		foreach (line ; file.byLine)
 		{
@@ -142,17 +141,17 @@ class Mesh
 			if (type == "v")
 			{
 				auto a = args[1 .. 4].to!(float[3]);
-				geomv.insert(Vector3(a[0], a[1], a[2]));
+				geomv.insert(Vector!3(a[0], a[1], a[2]));
 			}
 			else if (type == "vt")
 			{
 				auto a = args[1 .. 4].to!(float[3]);
-				textv.insert(Vector3(a[0], a[1], a[2]));
+				textv.insert(Vector!3(a[0], a[1], a[2]));
 			}
 			else if (type == "vn")
 			{
 				auto a = args[1 .. 4].to!(float[3]);
-				normv.insert(Vector3(a[0], a[1], a[2]));
+				normv.insert(Vector!3(a[0], a[1], a[2]));
 			}
 			else if (type == "vp")
 			{
@@ -164,9 +163,9 @@ class Mesh
 			{
 				if (args.length < 4)
 					throw new CorruptFileException("A polygon must have at least 3 vertices");
-				auto v = new Vector3[args.length - 1];
-				auto t = new Vector3[args.length - 1];
-				auto n = new Vector3[args.length - 1];
+				auto v = new Vector!3[args.length - 1];
+				auto t = new Vector!3[args.length - 1];
+				auto n = new Vector!3[args.length - 1];
 				foreach (i, e; args[1 .. $])
 				{
 					auto a = e.split("/");
@@ -233,12 +232,12 @@ class Mesh
 interface MeshInstance
 {
 	Quaternion orientation();
-	Vector3    position();
-	Vector3    scale();
+	Vector!3    position();
+	Vector!3    scale();
 
 	void orientation(Quaternion newOrientation);
-	void position(Vector3 newPosition);
-	void scale(Vector3 newScale);
+	void position(Vector!3 newPosition);
+	void scale(Vector!3 newScale);
 }
 
 
@@ -246,8 +245,8 @@ interface MeshInstance
 class StandaloneMeshInstance : MeshInstance
 {
 	private Quaternion _orientation = { x: 0, y: 0, z: 0, w: 1 };
-	private Vector3    _position = { 0, 0, 0 };
-	private Vector3    _scale = { 1, 1, 1 };
+	private Vector!3    _position = { 0, 0, 0 };
+	private Vector!3    _scale = { 1, 1, 1 };
 	private Mesh   _mesh;
 	private Buffer _world_pos;
 	private Buffer _world_rot;
@@ -271,20 +270,20 @@ class StandaloneMeshInstance : MeshInstance
 	}
 
 	Quaternion orientation() { return _orientation; }
-	Vector3    position()    { return _position;    }
-	Vector3    scale()       { return _scale;       }
+	Vector!3    position()    { return _position;    }
+	Vector!3    scale()       { return _scale;       }
 
 	void orientation(Quaternion newOrientation)
 	{
 		_orientation = newOrientation;
 		_dirty = true;
 	}
-	void position(Vector3 newPosition)
+	void position(Vector!3 newPosition)
 	{
 		_position = newPosition;
 		_dirty = true;
 	}
-	void scale(Vector3 newScale)
+	void scale(Vector!3 newScale)
 	{
 		_scale = newScale;
 		_dirty = true;
@@ -327,18 +326,18 @@ class MeshInstanceBatch
 		}
 
 		Quaternion orientation() { return _batch._orientations[_index]; }
-		Vector3    position()    { return _batch._positions[_index];    }
-		Vector3    scale()       { return _batch._scales[_index];       }
+		Vector!3    position()    { return _batch._positions[_index];    }
+		Vector!3    scale()       { return _batch._scales[_index];       }
 
 		void orientation(Quaternion newOrientation)
 		{
 			_batch._orientations[_index] = newOrientation;
 		}
-		void position(Vector3 newPosition)
+		void position(Vector!3 newPosition)
 		{
 			_batch._positions[_index] = newPosition;
 		}
-		void scale(Vector3 newScale)
+		void scale(Vector!3 newScale)
 		{
 			_batch._scales[_index] = newScale;
 		}
@@ -351,8 +350,8 @@ class MeshInstanceBatch
 	private Buffer _world_scl;
 	private auto _instances    = Array!SharedMeshInstance();
 	private auto _orientations = Array!Quaternion();
-	private auto _positions    = Array!Vector3();
-	private auto _scales       = Array!Vector3();
+	private auto _positions    = Array!(Vector!3)();
+	private auto _scales       = Array!(Vector!3)();
 	private auto _orientations_cache = Array!(Matrix!(float,3,3))();
 	private auto _positions_cache = Array!(float[3])();
 	private auto _scales_cache = Array!(float[3])();
@@ -386,8 +385,8 @@ class MeshInstanceBatch
 		auto instance = new SharedMeshInstance(this, _instances.length);
 		_instances.insert(instance);
 		_orientations.insert(Quaternion(0,0,0,1));
-		_positions.insert(Vector3(0,0,0));
-		_scales.insert(Vector3(1,1,1));
+		_positions.insert(Vector!3(0,0,0));
+		_scales.insert(Vector!3(1,1,1));
 		_orientations_cache.length = _instances.length;
 		_positions_cache.length = _instances.length;
 		_scales_cache.length = _scales.length;
