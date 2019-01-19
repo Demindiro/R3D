@@ -1,0 +1,25 @@
+{
+	"name": "r3d",
+	"authors": [
+		"David Hoppenbrouwers"
+	],
+	"description": "A simple multithreaded 3D game engine",
+	"copyright": "Copyright © 2019, David Hoppenbrouwers",
+	"license": "proprietary",
+
+	"targetPath": "build",
+	"targetName": "r3d",
+	"importPaths": [
+		"source"
+	],
+
+	"dependencies": {
+		"imageformats": "~>7.0.0"
+	},
+	"libs": [
+		"glfw"
+	],
+	"lflags": [
+		"-framework", "OpenGl"
+	]
+}

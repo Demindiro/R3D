@@ -187,14 +187,19 @@ struct Matrix(T, size_t _rows, size_t _columns)
 	{
 		T sum = 0;
 		static if (dim == 1)
+		{
 			return m[0,0];
-		static foreach (i; 0 .. dim)
-		{{
+		}
+		else
+		{
+			static foreach (i; 0 .. dim)
+			{{
 				 auto m2  = determinantCut!(dim, i)(m);
 				 auto val = determinantStep(m2) * (i % 2 ? -1 : 1);
 				 sum += m[i,0] * val;
-		 }}
-		return sum;
+			}}
+			return sum;
+		}
 	}
 
 	/**
