@@ -7,6 +7,11 @@ class Texture
 		
 	}
 
+	this(string file)
+	{
+		
+	}
+
 	~this()
 	{
 	}

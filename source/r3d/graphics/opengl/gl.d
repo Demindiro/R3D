@@ -31,6 +31,7 @@ enum GL_MULTISAMPLE      = 0x809D;
 
 enum GL_ARRAY_BUFFER     = 0x8892;
 enum GL_STATIC_DRAW      = 0x88E4;
+enum GL_DYNAMIC_DRAW     = 0x88E8;
 
 enum GL_FRAGMENT_SHADER  = 0x8B30;
 enum GL_VERTEX_SHADER    = 0x8B31;
