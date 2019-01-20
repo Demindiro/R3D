@@ -37,5 +37,8 @@ void main()
 	gl_Position.w = 1 + gl_Position.z;
 
 	// Scale the viewport properly
-	gl_Position.x /= screen_ratio;
+	if (screen_ratio > 1)
+		gl_Position.y *= screen_ratio;
+	else
+		gl_Position.x /= screen_ratio;
 }

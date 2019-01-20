@@ -13,9 +13,9 @@ import r3d;
 /**
 These values determine the amount of objects in the X and Z dimensions
 */
-enum dimX = 20;
+enum dimX = 200;
 /// Ditto
-enum dimY = 20;
+enum dimY = 200;
 
 enum cameraDeadZone = 0.001;
 

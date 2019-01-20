@@ -12,5 +12,8 @@ void main()
 	tex_crd = cam_rot * vert_pos;
 	gl_Position = vec4(vert_pos, 1);
 	gl_Position.z = 1;
-	gl_Position.y *= screen_ratio;
+	if (screen_ratio > 1)
+		gl_Position.y *= screen_ratio;
+	else
+		gl_Position.x /= screen_ratio;
 }
