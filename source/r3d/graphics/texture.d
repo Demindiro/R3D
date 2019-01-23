@@ -49,7 +49,8 @@ final class CubeMap
 		glBindTexture(GL_TEXTURE_CUBE_MAP, _texture);
 		foreach (i, e; _images)
 		{
-			glTexImage2D(_sides[i], 0, GL_RGB, e.w, e.h, 0, GL_RGB,
+			auto channels = e.c == 4 ? GL_RGBA : (e.c == 3 ? GL_RGB : /* Dunno */0);
+			glTexImage2D(_sides[i], 0, GL_RGB, e.w, e.h, 0, channels,
 			             GL_UNSIGNED_BYTE, e.pixels.ptr);
 		}
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

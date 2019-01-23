@@ -19,8 +19,9 @@ enum GL_ALWAYS   = 0x0207;
 enum GL_SRC_ALPHA        = 0x0302;
 enum GL_ONE_MINUS_SRC_ALPHA = 0x0303;
 
-enum GL_BLEND            = 0x0BE2;
-enum GL_DEPTH_TEST       = 0x0B71;
+enum GL_CULL_FACE  = 0x0B44;
+enum GL_DEPTH_TEST = 0x0B71;
+enum GL_BLEND      = 0x0BE2;
 
 enum GL_TEXTURE_1D       = 0x0DE0;
 enum GL_TEXTURE_2D       = 0x0DE1;

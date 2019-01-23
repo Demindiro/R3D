@@ -4,6 +4,7 @@ import std.container;
 import std.conv;
 import std.exception;
 import std.file;
+import std.math;
 import std.range;
 import std.stdio;
 import std.string;
@@ -35,7 +36,7 @@ struct Triangle
 	this(Vector!3[3] vertices)
 	{
 		Vector!3[3] text, norm;
-		auto n = cross(vertices[1] - vertices[0], vertices[2] - vertices[0]);
+		auto n = getNormal(vertices[0], vertices[1], vertices[2]);
 		norm[0] = norm[1] = norm[2] = n;
 		foreach (i; 0 .. 3)
 			points[i] = Point(vertices[i], text[i], norm[i]);
@@ -47,18 +48,29 @@ struct Triangle
 			points[i] = Point(vertices[i], textures[i], normals[i]);
 	}
 
+	private static auto getNormal(const Vector!3 v0, const Vector!3 v1, const Vector!3 v2)
+	{
+		return cross(v1 - v0, v2 - v0);
+	}
+
 	static auto splitPolygon(const Vector!3[] vertices, const Vector!3[] textures,
 	                         const Vector!3[] normals)
 	{
-		assert(vertices.length == textures.length);
-		assert(vertices.length == normals .length);
 		auto triangles = new Triangle[vertices.length - 2];
 		foreach(i, ref t; triangles)
 		{
 			auto k = i + 1, l = i + 2;
+			Vector!3[3] norm;
+			foreach (m; 0 .. 3)
+			{
+				if (normals[i + m][0].isNaN)
+					norm[m] = getNormal(vertices[i], vertices[i + 1], vertices[i + 2]);
+				else
+					norm[m] = normals[i + m];
+			}
 			t = Triangle([vertices[0], vertices[k], vertices[l]],
 			             [textures[0], textures[k], textures[l]],
-			             [normals [0], normals [k], normals [l]]);
+			             [norm    [0], norm    [1], norm    [2]]);
 		}
 		return triangles;
 	}
@@ -131,7 +143,7 @@ final class Mesh
 		auto textv     = Array!(Vector!3)();
 		auto normv     = Array!(Vector!3)();
 		auto triangles = Array!Triangle();
-		foreach (line ; file.byLine)
+		foreach (line; file.byLine)
 		{
 			line = line.strip();
 			if (line == "" || line[0] == '#')
@@ -145,7 +157,12 @@ final class Mesh
 			}
 			else if (type == "vt")
 			{
-				auto a = args[1 .. 4].to!(float[3]);
+				float[3] a;
+				a[0] = args[1].to!float;
+				if (args.length >= 3)
+					a[1] = args[2].to!float;
+				if (args.length >= 4)
+					a[2] = args[3].to!float;
 				textv.insert(Vector!3(a[0], a[1], a[2]));
 			}
 			else if (type == "vn")
@@ -192,7 +209,8 @@ final class Mesh
 			}
 			else
 			{
-				throw new CorruptFileException(to!string("Invalid type: " ~ type));
+				// TODO ignore all the rest for now - loading basic meshes is more important right now.
+				//throw new CorruptFileException(to!string("Invalid type: " ~ type));
 			}
 		}
 		return new Mesh(triangles);
@@ -245,8 +263,8 @@ interface MeshInstance
 class StandaloneMeshInstance : MeshInstance
 {
 	private Quaternion _orientation = { x: 0, y: 0, z: 0, w: 1 };
-	private Vector!3    _position = { 0, 0, 0 };
-	private Vector!3    _scale = { 1, 1, 1 };
+	private auto _position = Vector!3(0,0,0);
+	private auto _scale    = Vector!3(1,1,1);
 	private Mesh   _mesh;
 	private Buffer _world_pos;
 	private Buffer _world_rot;
@@ -269,7 +287,7 @@ class StandaloneMeshInstance : MeshInstance
 		// TODO
 	}
 
-	Quaternion orientation() { return _orientation; }
+	Quaternion  orientation() { return _orientation; }
 	Vector!3    position()    { return _position;    }
 	Vector!3    scale()       { return _scale;       }
 
@@ -294,9 +312,9 @@ class StandaloneMeshInstance : MeshInstance
 		float[3] pos = [position.x, position.y, position.z];
 		auto     rot = orientation.matrix!float;
 		float[3] scl = [scale.x, scale.y, scale.z];
-		setVertexBufferData(_world_pos, pos.ptr, pos.length * pos[0].sizeof);
-		setVertexBufferData(_world_rot, rot.ptr, rot.size   * 4);
-		setVertexBufferData(_world_scl, scl.ptr, scl.length * scl[0].sizeof);
+		setVertexBufferData(_world_pos, pos.ptr, pos.sizeof);
+		setVertexBufferData(_world_rot, rot.ptr, rot.size * rot[0].sizeof);
+		setVertexBufferData(_world_scl, scl.ptr, scl.sizeof);
 	}
 
 	void draw()

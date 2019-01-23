@@ -61,6 +61,8 @@ class Window
 		glfwSetCursorPosCallback(_window, &cursorPosCallback);
 		glfwSetCursorEnterCallback(_window, &cursorEnterCallback);
 
+		// Why does this reverse rotations and break things?
+		//glEnable(GL_CULL_FACE);
 		//glEnable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_MULTISAMPLE);
@@ -89,7 +91,7 @@ class Window
 
 	private void _cursorPosCallback(double x, double y)
 	{
-		_cursorPos = Vector2(x, y);
+		_cursorPos = Vector!2(x, y);
 	}
 
 	private void _cursorEnterCallback(bool entered)
@@ -119,7 +121,7 @@ class Window
 		return _keyActions[key];
 	}
 
-	Vector2 cursorPos()
+	Vector!2 cursorPos()
 	{
 		return _cursorPos;
 	}

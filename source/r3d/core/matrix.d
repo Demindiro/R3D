@@ -36,7 +36,7 @@ struct Matrix(T, size_t _rows, size_t _columns)
 	Params:
 		cols = The column vectors to copy.
 	*/
-	this(T)(Vector3[rows] cols) @nogc pure if (is(T == double) && columns == 3)
+	this(T)(Vector!3[rows] cols) @nogc pure if (is(T == double) && columns == 3)
 	{
 		static foreach (i, v; cols)
 		{
@@ -115,7 +115,7 @@ struct Matrix(T, size_t _rows, size_t _columns)
 				}
 			}
 		}
-		else static if (is(U == Vector3))
+		else static if (is(U == Vector!3))
 		{
 			static assert(rows == 3);
 			auto b = U(0);

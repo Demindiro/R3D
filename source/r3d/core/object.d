@@ -36,7 +36,7 @@ final class R3DObject
 	/// The orientation and position of this object in the world.
 	Quaternion    orientation = Quaternion.unit;
 	/// Ditto
-	Vector3       position    = Vector3(0, 0, 0);
+	auto position    = Vector!3(0, 0, 0);
 	/// Wether this object is enabled or not. If not, it will not be updated.
 	bool          enabled     = true;
 

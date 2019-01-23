@@ -6,7 +6,7 @@ struct btVector3
 {
 	import r3d.core.vector;
 	btScalar x, y, z, w;
-	this(Vector3 v)
+	this(Vector!3 v)
 	{
 		x = v.x;
 		y = v.y;

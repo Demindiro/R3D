@@ -36,6 +36,41 @@ struct Quaternion
 	}
 
 	/**
+	Returns: the conjugate of the quaternion.
+	*/
+	auto conjugate() pure @nogc
+	{
+		return Quaternion(-x,-y,-z, w);
+	}
+
+	/**
+	Returns: the inverse of the quaternion.
+	*/
+	auto inverse() pure @nogc
+	{
+		return conjugate / norm;
+	}
+
+	auto ln() pure @nogc
+	{
+		auto n = (x * x + y * y + z * z).sqrt;
+		auto t = acos(w / norm) / n;
+		return Quaternion(x * t, y * t, z * t, norm.log);
+	}
+
+	auto exp() pure @nogc
+	{
+		auto n = (x * x + y * y + z * z).sqrt;
+		auto s = n.sin / n;
+		return w.exp * Quaternion(x * s, y * s, z * s, n.cos);
+	}
+
+	auto pow(double n) pure @nogc
+	{
+		return (ln * n).exp;
+	}
+
+	/**
 	Converts a quaternion to a 3x3 matrix.
 
 	Params:
@@ -69,9 +104,9 @@ struct Quaternion
 	Sets the quaternion values based on the given euler angles.
 
 	Params:
-		v = `Vector3` representation of the euler angles to be converted.
+		v = `Vector!3` representation of the euler angles to be converted.
 	*/
-	void eulerAngles(Vector3 v) pure @nogc
+	void eulerAngles(Vector!3 v) pure @nogc
 	{
 		auto cx = cos(v.x * 0.5), sx = sin(v.x * 0.5);
 		auto cy = cos(v.y * 0.5), sy = sin(v.y * 0.5);
@@ -86,16 +121,13 @@ struct Quaternion
 	/**
 	Gets a quaternion representation in euler angles.
 
-	Returns: `Vector3` representing the quaternion in euler angles.
+	Returns: `Vector!3` representing the quaternion in euler angles.
 	*/
-	Vector3 eulerAngles() pure @nogc
+	Vector!3 eulerAngles() pure @nogc
 	{
-		Vector3 v = {
-			x: atan2(2 * (w*x + y*z), 1 - 2 * (x*x + y*y)),
-			y: asin (2 * (w*y - z*x)),
-			z: atan2(2 * (w*z - x*y), 1 - 2 * (y*y + z*z))
-		};
-		return v;
+		return Vector!3(atan2(2 * (w*x + y*z), 1 - 2 * (x*x + y*y)),
+		                asin (2 * (w*y - z*x)),
+		                atan2(2 * (w*z - x*y), 1 - 2 * (y*y + z*z)));
 	}
 
 	/**
@@ -115,14 +147,14 @@ struct Quaternion
 		{
 			static if (op == "+" || op == "-")
 			{
-				mixin("q.elements[]" ~ op ~ "= c.elements[]");
+				mixin("q.elements[]" ~ op ~ "= c.elements[];");
 			}
 			else static if (op == "*")
 			{
-				q.w = p.w * this.w - p.x * this.x - p.y * this.y - p.z * this.z;
-				q.x = p.x * this.w + p.w * this.x - p.z * this.y + p.y * this.z;
-				q.y = p.y * this.w + p.w * this.y - p.z * this.x - p.x * this.z;
-				q.z = p.z * this.w - p.y * this.x + p.x * this.y + p.w * this.z;
+				q.w = this.w * c.w - this.x * c.x - this.y * c.y - this.z * c.z;
+				q.x = this.x * c.w + this.w * c.x - this.z * c.y + this.y * c.z;
+				q.y = this.y * c.w + this.w * c.y + this.z * c.x - this.x * c.z;
+				q.z = this.z * c.w + this.w * c.z + this.x * c.y - this.y * c.x;
 			}
 			else
 			{
@@ -147,6 +179,12 @@ struct Quaternion
 		return opBinary!(op,T)(c);
 	}
 
+	// Ditto
+	auto opUnary(string op)() pure @nogc
+	{
+		return mixin("Quaternion(" ~ op ~ "x," ~ op ~ "y," ~ op ~ "z," ~ op ~ "w)");
+	}
+
 	/// Ditto
 	void opOpAssign(string op, T)(T c) pure @nogc
 	{
@@ -154,7 +192,43 @@ struct Quaternion
 	}
 
 	/**
-	The unit quaternion, defined as `q = w`.
+	Returns: the dot product of the quaternion.
+	*/
+	static auto dot(Quaternion q, Quaternion p) pure @nogc nothrow
+	{
+		return q.x * p.x + q.y * p.y + q.z * p.z + q.w * p.w;
+	}
+
+
+	static auto slerp(Quaternion from, Quaternion to, double frac)
+	{
+		from /= from.norm;
+		to   /= to  .norm;
+		auto d = dot(from, to);
+		if (d < 0)
+		{
+			to = -to;
+			d  = -d;
+		}
+		// Linearly interpolate if acos may fail.
+		if (d > 0.9995)
+		{
+			auto r = from + frac * (to - from);
+			r /= r.norm;
+			return r;
+		}
+		auto a0  = acos(d);
+		auto a   = a0 * frac;
+		auto sa  = sin(a);
+		auto sa0 = sin(a0);
+		auto f = cos(a) - d * sa / sa0;
+		auto t = sa / sa0;
+
+		return (f * from) + (t * to);
+	}
+
+	/**
+	The unit quaternion, defined as `q = 1`.
 	*/
 	static const Quaternion unit = { x: 0, y: 0, z: 0, w: 1 };
 }

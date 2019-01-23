@@ -1,0 +1,108 @@
+# Blender MTL File: 'Sketchfab_2018_02_09_23_14_11.blend'
+# Material Count: 10
+
+newmtl Buildings
+Ns 586.274510
+Ka 1.000000 1.000000 1.000000
+Kd 0.529491 0.394050 0.368847
+Ks 0.500000 0.470203 0.470203
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Buildings02
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl Buildings02_SteelOrStone
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd D:/Google Drive/Projects/Blender/Blender/Warhammer 40k Modes/General Textures/SteelOrStone.png
+
+newmtl Buildings_SteelOrStone
+Ns 586.274510
+Ka 1.000000 1.000000 1.000000
+Kd 0.529491 0.394050 0.368847
+Ks 0.500000 0.470203 0.470203
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd D:/Google Drive/Projects/Blender/Blender/Warhammer 40k Modes/General Textures/SteelOrStone.png
+
+newmtl Default
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Bump D:/Google Drive/Projects/Blender/Blender/Warhammer 40k Modes/Scenarios/Space Marine/Weapons/Textures/Eagle02_Normal.png
+
+newmtl LightNode
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.800000 0.030628 0.024199
+Ks 1.000000 0.969936 0.969936
+Ke 0.800000 0.030628 0.024199
+Ni 1.000000
+d 0.417000
+illum 2
+
+newmtl ShipMaterial
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl ShipMaterial02
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd D:/Google Drive/Projects/Blender/Blender/Warhammer 40k Modes/General Textures/SteelOrStone.png
+
+newmtl ShipMaterial_ColorOrNot
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd D:/Google Drive/Projects/Blender/Blender/Warhammer 40k Modes/General Textures/ColorOrNot.png
+
+newmtl ShipMaterial_SteelOrStone
+Ns 96.078431
+Ka 1.000000 1.000000 1.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd D:/Google Drive/Projects/Blender/Blender/Warhammer 40k Modes/General Textures/SteelOrStone.png

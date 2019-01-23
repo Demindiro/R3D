@@ -65,7 +65,7 @@ class Motion : Component
 	override void update(World world, R3DObject object, Duration deltaTime)
 	{
 		auto i = (object.position.x + 1) + 3 * (object.position.z + 1);
-		object.orientation.eulerAngles = Vector3(0, _rot * _rand * 2.3, 0);
+		object.orientation.eulerAngles = Vector!3(0, _rot * _rand * 2.3, 0);
 		object.position.y = 2 * sin(_rot * _rand2);
 
 		_rot += deltaTime.total!"usecs" / 1_000_000.0L * 1.3;
@@ -114,7 +114,7 @@ int main()
 		auto obj = new R3DObject;
 		auto e   = batch.createInstance();
 		obj.insert(new Motion(e));
-		obj.position = Vector3(4 * (i % dimX), 0, 4 * (i / dimY));
+		obj.position = Vector!3(4 * (i % dimX), 0, 4 * (i / dimY));
 		world.insert(obj);
 	}
 

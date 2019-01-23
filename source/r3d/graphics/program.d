@@ -56,9 +56,9 @@ class Program
 		alias v = value;
 		static if (is(T == float))
 			glUniform1f(location, v);
-		else static if (is(T == Vector2))
+		else static if (is(T == Vector!2))
 			glUniform2f(location, v.x, v.y);
-		else static if (is(T == Vector3))
+		else static if (is(T == Vector!3))
 			glUniform3f(location, v.x, v.y, v.z);
 		else static if (is(T == Quaternion))
 			glUniform4f(location, v.x, v.y, v.z, v.w);
@@ -78,7 +78,7 @@ class Program
 		return setUniform(loc, value);
 	}
 
-	void setView(bool inverted, T)(Window window, Vector3 position, T rotation)
+	void setView(bool inverted, T)(Window window, Vector!3 position, T rotation)
 	if (is(T == Quaternion) || is(T == Matrix!(float,3,3)))
 	{
 		setUniform("screen_ratio", cast(float)window.width / window.height);
