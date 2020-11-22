@@ -84,7 +84,8 @@ int main()
 	writeln(renderer);
 
 	// Create the mesh
-	auto mesh = Mesh.fromFile("mesh.obj");
+	//auto mesh = Mesh.fromFile("mesh.obj");
+	auto mesh = Mesh.fromFile("models/pyramid.obj");
 
 	// Create some instances sharing the same mesh
 	auto batch = new MeshInstanceBatch(mesh);
