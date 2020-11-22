@@ -3,3 +3,4 @@
 build/
 doc/
 dub.selections.json
+.dub/

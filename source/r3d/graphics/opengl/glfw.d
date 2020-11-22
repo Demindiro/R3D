@@ -64,7 +64,8 @@ extern (C) alias CursorEnterFun = void function(Window window, bool entered);
 @nogc extern (C): void glfwSetCursorEnterCallback(Window window, CursorEnterFun callback);
 @nogc extern (C): void glfwSetInputMode(Window window, InputMode mode,
                                         CursorMode value);
-@nogc extern (C): void glfwSetInputMode(Window window, InputMode mode, bool value);
+// How did this compile before?
+//@nogc extern (C): void glfwSetInputMode(Window window, InputMode mode, bool value);
 @nogc extern (C): void glfwSetInputMode(Window window, InputMode mode, int value);
 
 
