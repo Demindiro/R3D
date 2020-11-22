@@ -1,0 +1,26 @@
+R3D engine
+==========
+
+A game engine written in D.
+
+Features:
+* Multithreading (try `make example-many`!)
+* OpenGL bindings
+* Abuse of mixins (check the code for `Vector` and `Matrix`)
+
+
+Building the examples
+---------------------
+
+**Debian**
+
+Install `dub`: `apt install dub`
+Install `glfw`: `apt install libglfw3-dev`
+Run `make example-<whatever>`
+
+
+Available examples
+------------------
+
+`make example-shooter`
+`make example-many` (Warning: may make your PC cry)
