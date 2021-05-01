@@ -5,7 +5,7 @@
 	],
 	"description": "A simple multithreaded 3D game engine",
 	"copyright": "Copyright © 2019, David Hoppenbrouwers",
-	"license": "proprietary",
+	"license": "AGPLv3",
 
 	"targetPath": "build",
 	"targetName": "r3d",
